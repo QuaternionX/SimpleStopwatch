@@ -1,0 +1,17 @@
+{
+  "uuid": "b6f5c139-2cc8-4ec1-8ee8-77e654638ba2",
+  "shortName": "SimpleStopwatch",
+  "longName": "Simple Stopwatch",
+  "companyName": "Brandon Milton, BrandonSoft",
+  "versionCode": 1,
+  "versionLabel": "1.0.0",
+  "watchapp": {
+    "watchface": false
+  },
+  "appKeys": {
+    "dummy": 0
+  },
+  "resources": {
+    "media": []
+  }
+}
