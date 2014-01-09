@@ -3,35 +3,24 @@
 static Window *window;
 static TextLayer *text_layer;
 static ActionBarLayer *action_bar;
-static int counter = 0;
+static int seconds = 0;
+static int minutes = 0;
+static int hours = 0;
 static bool paused = true;
 
-static char *itoa(int num) {
-  static char buff[20] = {};
-  int i = 0, temp_num = num, length = 0;
+
+static char * vtom(int sec, int min, int hour)
+{
+  int time = (hour * 10000) + (min * 100) + sec;
+  static char buff[11] = {'0','0','h','\n','0','0','m','\n','0','0','s'};
   char *string = buff;
-  if(num > 0) {
-    // count how many characters in the number
-    while(temp_num) {
-      temp_num /= 10;
-      length++;
-    }
-    // assign the number to the buffer starting at the end of the 
-    // number and going to the begining since we are doing the
-    // integer to character conversion on the last number in the
-    // sequence
-    if (length == 2)
-      length = 1;
-    buff[0] = '0'; //ensures extra 0 in front!
-    buff[1] = '0';
-    for(i = length; i >= 0; i--) {
-      buff[i] = '0' + (num % 10);
-      num /= 10;
-    }
-    buff[length+1] = '\0'; // can't forget the null byte to properly end our string
+  int i = 9;
+  while (time > 0)
+  {
+    buff[i] = ((time % 10) + '0');
+    time /= 10;
+    i -= (i % 3) + 1;
   }
-  else
-    return "00";
   return string;
 }
 
@@ -40,17 +29,22 @@ static void handle_second_tick(struct tm* tick_time, TimeUnits units_changed)
   if (paused)
     return;
 
-  counter++;
-  static char catStr[9] = {};
-  catStr[0] = '\0';
-  strcat(catStr, itoa(counter/360));
-  strcat(catStr, "h\n"); //don't know how else to do it
-  strcat(catStr, itoa(counter/60) - ((counter/360)*60));
-  strcat(catStr, "m\n");
-  strcat(catStr, itoa(counter - ((counter/60)*60) - ((counter/360)*60)));
-  strcat(catStr, "s");
+  seconds++;
 
-  text_layer_set_text(text_layer, catStr);
+  /* now we need to handle minutes and hours */
+  if (seconds >= 60)
+  {
+    minutes++;
+    seconds = 0;
+  }
+  if (minutes >= 60)
+  {
+    hours++;
+    minutes = 0;
+  }
+
+
+  text_layer_set_text(text_layer, vtom(seconds,minutes,hours));
 }
 
 void lap_handle(ClickRecognizerRef recognizer, void *context)
@@ -65,7 +59,9 @@ void pause_handle(ClickRecognizerRef recognizer, void *context)
 
 void reset_handle(ClickRecognizerRef recognizer, void *context)
 {
-  counter = 0;
+  seconds = 0;
+  minutes = 0;
+  hours = 0;
   text_layer_set_text(text_layer, "00h\n00m\n00s");
 }
 
@@ -86,7 +82,7 @@ static void window_load(Window *window) {
   text_layer_set_text_alignment(text_layer, GTextAlignmentLeft);
   text_layer_set_font(text_layer, fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
   layer_add_child(window_layer, text_layer_get_layer(text_layer));
-  
+
   //initialize side action bar
   action_bar = action_bar_layer_create();
   action_bar_layer_add_to_window(action_bar, window);
