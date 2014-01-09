@@ -19,7 +19,10 @@ static char * vtom(int sec, int min, int hour)
   {
     buff[i] = ((time % 10) + '0');
     time /= 10;
-    i -= (i % 3) + 1;
+    if (i % 4 == 1)
+      i--;
+    else if (i % 4 == 0)
+      i-=3;
   }
   return string;
 }
