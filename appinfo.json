@@ -12,6 +12,27 @@
     "dummy": 0
   },
   "resources": {
-    "media": []
+    "media": [
+    	{
+		"type": "png",
+		"name": "IMAGE_RESUME",
+		"file": "images/resume.png"
+	},
+	{
+		"type": "png",
+		"name": "IMAGE_PAUSE",
+		"file": "images/pause.png"
+	},
+	{
+		"type": "png",
+		"name": "IMAGE_RESET",
+		"file": "images/reset.png"
+	},
+	{
+		"type": "png",
+		"name": "IMAGE_LAP",
+		"file": "images/lap.png"
+	}
+    ]
   }
 }
