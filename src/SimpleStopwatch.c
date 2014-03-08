@@ -230,6 +230,7 @@ void reset_handle(ClickRecognizerRef recognizer, void *context)
 
   /*pause the stopwatch*/
   paused = true;
+  switch_resume_icon(); /* switch resume icon */
 
   /*update text*/
   text_layer_set_text(text_layer, "00h\n00m\n00s");
