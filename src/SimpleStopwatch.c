@@ -228,6 +228,9 @@ void reset_handle(ClickRecognizerRef recognizer, void *context)
 
   reset_laps(); /*reset laps */
 
+  /*pause the stopwatch*/
+  paused = true;
+
   /*update text*/
   text_layer_set_text(text_layer, "00h\n00m\n00s");
 }
