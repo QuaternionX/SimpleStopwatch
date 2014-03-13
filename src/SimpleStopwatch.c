@@ -432,7 +432,7 @@ static void save_data(void)
 static void load_data(void)
 {
   /*default values*/
-  char* time = "00h:00m:00s";
+  char time[] = "00h:00m:00s";
   bool lpaused = true;
 
   /*load values if exist*/
@@ -464,11 +464,12 @@ static void init(void) {
       .unload = window_unload,
       });
 
-  /* load data */
-  load_data();
 
   /*push the window onto the stack*/
   window_stack_push(window, true);
+
+  /* load data */
+  load_data();
 }
 
 /*Function:   deinit(void)
