@@ -33,6 +33,7 @@ static char lapTimes[100][12];
 static SimpleMenuSection menu_sections[1];
 static SimpleMenuItem menu_items[100];
 
+static char * vtom(int sec, int min, int hour);
 /*Function:   string_to_time(char*)
 * Purpose:    Converts a string into the variables that hold time information
 *             (useful for loading times from storage/lap list)
@@ -55,6 +56,8 @@ static void string_to_time(char* timeString)
     ++index;
     read = timeString[index];
   }
+
+  text_layer_set_text(text_layer, vtom(seconds,minutes,hours));
 }
 /*Function:   vtom(int,int,int)
 * Purpose:    To convert individual hours, minutes, and seconds values 
