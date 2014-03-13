@@ -463,6 +463,10 @@ static void init(void) {
       .load = window_load,
       .unload = window_unload,
       });
+
+  /* load data */
+  load_data();
+
   /*push the window onto the stack*/
   window_stack_push(window, true);
 }
