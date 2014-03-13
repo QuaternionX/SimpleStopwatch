@@ -33,7 +33,10 @@ static char lapTimes[100][12];
 static SimpleMenuSection menu_sections[1];
 static SimpleMenuItem menu_items[100];
 
+/*Function declarations!*/
 static char * vtom(int sec, int min, int hour);
+
+
 /*Function:   string_to_time(char*)
 * Purpose:    Converts a string into the variables that hold time information
 *             (useful for loading times from storage/lap list)
@@ -42,10 +45,14 @@ static char * vtom(int sec, int min, int hour);
 */
 static void string_to_time(char* timeString)
 {
+  /*declare reading at beginning of string*/
   int index = 0;
   char read = timeString[index];
+
+  /* keep going until end of string is reached */
   while (read != '\0')
   {
+    /* read the digits of the hours and minutes and put them correctly*/
     if (read == 'h')
       hours = (10*(timeString[index-2] - '0') + (timeString[index-1] - '0'));
     if (read == 'm')
@@ -53,10 +60,12 @@ static void string_to_time(char* timeString)
     if (read == 's')
       seconds = (10*(timeString[index-2] - '0') + (timeString[index-1] - '0'));
 
+    /*next character!*/
     ++index;
     read = timeString[index];
   }
 
+  /* force watch refresh */
   text_layer_set_text(text_layer, vtom(seconds,minutes,hours));
 }
 /*Function:   vtom(int,int,int)
@@ -444,10 +453,11 @@ static void load_data(void)
   if (persist_exists(PAUSED_KEY))
     lpaused = persist_read_bool(PAUSED_KEY);
 
+  /*synchronize data*/
   paused = lpaused;
   string_to_time(time);
 
-
+  /*appear usual*/
   switch_resume_icon();
 }
 

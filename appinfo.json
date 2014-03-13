@@ -3,8 +3,8 @@
   "shortName": "Stopwatch",
   "longName": "Simple Stopwatch",
   "companyName": "Brandon Milton, BrandonSoft",
-  "versionCode": 12,
-  "versionLabel": "2.1.2",
+  "versionCode": 16,
+  "versionLabel": "2.1.5",
   "watchapp": {
     "watchface": false
   },
