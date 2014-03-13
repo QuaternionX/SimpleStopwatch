@@ -3,4 +3,5 @@ SimpleStopwatch is aimed to be a basic Stopwatch app for the Pebble.
 The stopwatch app currently contains functionality for start, pause, resetting,
 and holding information about laps.
 
-
+Recently, the ability to save the current time has been added to the stopwatch,
+meaning that the app can be closed and reopened without losing a beat!
