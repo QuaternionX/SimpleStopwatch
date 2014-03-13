@@ -13,6 +13,9 @@
 *******************************************************************************/
 #include <pebble.h>
 
+#define PAUSED_KEY 10
+#define TIME_KEY 11
+
 /* variable declarations */
 static Window *window;
 static Window *lap_window;
@@ -30,6 +33,29 @@ static char lapTimes[100][12];
 static SimpleMenuSection menu_sections[1];
 static SimpleMenuItem menu_items[100];
 
+/*Function:   string_to_time(char*)
+* Purpose:    Converts a string into the variables that hold time information
+*             (useful for loading times from storage/lap list)
+* Parameters: timeString - The string to load the times from
+* Return:     None
+*/
+static void string_to_time(char* timeString)
+{
+  int index = 0;
+  char read = timeString[index];
+  while (read != '\0')
+  {
+    if (read == 'h')
+      hours = (10*(timeString[index-2] - '0') + (timeString[index-1] - '0'));
+    if (read == 'm')
+      minutes = (10*(timeString[index-2] - '0') + (timeString[index-1] - '0'));
+    if (read == 's')
+      seconds = (10*(timeString[index-2] - '0') + (timeString[index-1] - '0'));
+
+    ++index;
+    read = timeString[index];
+  }
+}
 /*Function:   vtom(int,int,int)
 * Purpose:    To convert individual hours, minutes, and seconds values 
 *             into a readable String for the user to see. This is done
@@ -384,6 +410,44 @@ static void window_unload(Window *window)
   action_bar_layer_destroy(action_bar);
 }
 
+/*Function:   save_data(void)
+* Purpose:    This method allows for laps and current time/pause state to be
+*             saved within the watch so they are resumed when the app is
+*             reopned.
+* Parameters: None
+* Return:     None
+*/
+static void save_data(void)
+{
+  persist_write_string(TIME_KEY, vtom(seconds,minutes,hours));
+  persist_write_bool(PAUSED_KEY, paused);
+}
+
+/*Function:   load_data(void)
+* Purpose:    This method allows for laps/current time/pause state to be resumed
+*             from when the user last quit the app
+* Parameters: None
+* Return:     None
+*/
+static void load_data(void)
+{
+  /*default values*/
+  char* time = "00h:00m:00s";
+  bool lpaused = true;
+
+  /*load values if exist*/
+  if (persist_exists(TIME_KEY))
+    persist_read_string(TIME_KEY, time, PERSIST_STRING_MAX_LENGTH);
+  if (persist_exists(PAUSED_KEY))
+    lpaused = persist_read_bool(PAUSED_KEY);
+
+  paused = lpaused;
+  string_to_time(time);
+
+
+  switch_resume_icon();
+}
+
 /*Function:   init(void)
 * Purpose:    initialize the main window by creating it, adding the handlers
 *             to all of the proper functions, and pushing it to the window stack
@@ -411,6 +475,8 @@ static void init(void) {
 * Return:     none.
 */
 static void deinit(void) {
+  save_data(); /*save all the data before-hand*/
+
   /*deinitialize all images*/
   gbitmap_destroy(my_icon_start);
   gbitmap_destroy(my_icon_reset);
