@@ -473,14 +473,17 @@ static void window_unload(Window *window)
 */
 static void save_data(void)
 {
+  /*First, save the data about the current time*/
   struct tm *current_time;
   time_t now;
   char current_time_string[] = "00h\n00m\n00s";
   now = time(NULL);
   current_time = localtime(&now);
+  /*convert the current time to a writable string*/
   time_to_string(current_time->tm_hour, current_time->tm_min, 
                  current_time->tm_sec, current_time_string);
 
+  /*write all data to disk*/
   persist_write_string(TIME_KEY, time_text);
   persist_write_bool(PAUSED_KEY, paused);
   persist_write_string(WALLTIME_KEY, current_time_string);
@@ -513,6 +516,22 @@ static void load_data(void)
     lpaused = persist_read_bool(PAUSED_KEY);
   if (persist_exists(WALLTIME_KEY))
     persist_read_string(WALLTIME_KEY, stop_time, PERSIST_STRING_MAX_LENGTH);
+
+  /*synchronize data*/
+  paused = lpaused;
+
+  /*if we are paused, we can skip everything, no recording in the background*/
+  if (paused)
+  {
+    string_to_time(ltime);
+    /*appear usual*/
+    switch_resume_icon();
+    /* force watch refresh */
+    vtom();
+    text_layer_set_text(text_layer, time_text);
+
+    return; /*skip everything!*/
+  }
 
   /*load old time into vars*/
   string_to_time(stop_time);
@@ -559,8 +578,6 @@ static void load_data(void)
   }
  
 
-  /*synchronize data*/
-  paused = lpaused;
 
 
   /*appear usual*/
