@@ -12,9 +12,11 @@
 * Enjoy!
 *******************************************************************************/
 #include <pebble.h>
+#include <time.h>
 
-#define PAUSED_KEY 10
-#define TIME_KEY 11
+#define PAUSED_KEY 0
+#define TIME_KEY 1
+#define WALLTIME_KEY 2
 
 /* variable declarations */
 static Window *window;
@@ -36,6 +38,39 @@ static SimpleMenuItem menu_items[100];
 
 /*Function declarations!*/
 void vtom();
+
+
+/*Function:   time_to_string(int,int,int,char*)
+* Purpose:    To turn given time information into a parsable string
+*             (that will be parsed by string_to_time)
+* Parameters: hours - The hours in the time
+*             mins  - The minutes in the time
+*             secs  - The seconds in the time
+*             buffer- Where to save the string
+* Return:     None
+*/
+static void time_to_string(const int pHours, const int pMins, const int pSecs,
+                           char* buffer)
+{
+  /* create appended time number and empty String template */
+  int time = (pHours * 10000) + (pMins * 100) + pSecs;
+  int i = 9; /* used to scroll through time template */
+
+  while (i >= 0)
+  {
+    if (time == 0)
+      buffer[i] = '0';
+
+    buffer[i] = (time % 10) + '0'; /* add time digits (conv to char) */
+    time /= 10; /* remove inserted digit from number */
+
+    /*logic to skip a spot (if it is \n or letter spot)*/
+    if (i % 4 == 1)
+      i--;
+    else if (i % 4 == 0)
+      i-=3;
+  }
+}
 
 
 /*Function:   string_to_time(char*)
@@ -66,10 +101,9 @@ static void string_to_time(char* timeString)
     read = timeString[index];
   }
 
-  /* force watch refresh */
-  vtom();
-  text_layer_set_text(text_layer, time_text);
 }
+
+
 /*Function:   vtom(int,int,int)
 * Purpose:    To convert individual hours, minutes, and seconds values 
 *             into a readable String for the user to see. This is done
@@ -80,7 +114,6 @@ static void string_to_time(char* timeString)
 *             hour - the hours to put into string
 * Return:     The String containing the readable time.
 */
-
 void vtom()
 {
   /* create appended time number and empty String template */
@@ -440,8 +473,17 @@ static void window_unload(Window *window)
 */
 static void save_data(void)
 {
+  struct tm *current_time;
+  time_t now;
+  char current_time_string[] = "00h\n00m\n00s";
+  now = time(NULL);
+  current_time = localtime(&now);
+  time_to_string(current_time->tm_hour, current_time->tm_min, 
+                 current_time->tm_sec, current_time_string);
+
   persist_write_string(TIME_KEY, time_text);
   persist_write_bool(PAUSED_KEY, paused);
+  persist_write_string(WALLTIME_KEY, current_time_string);
 }
 
 /*Function:   load_data(void)
@@ -453,21 +495,80 @@ static void save_data(void)
 static void load_data(void)
 {
   /*default values*/
-  char time[] = "00h:00m:00s";
+  char ltime[] = "00h:00m:00s";
+  char stop_time[] = "00h:00m:00s";
   bool lpaused = true;
+
+  /*get the current time*/
+  struct tm *current_time;
+  time_t now;
+  now = time(NULL);
+  current_time = localtime(&now);
+
 
   /*load values if exist*/
   if (persist_exists(TIME_KEY))
-    persist_read_string(TIME_KEY, time, PERSIST_STRING_MAX_LENGTH);
+    persist_read_string(TIME_KEY, ltime, PERSIST_STRING_MAX_LENGTH);
   if (persist_exists(PAUSED_KEY))
     lpaused = persist_read_bool(PAUSED_KEY);
+  if (persist_exists(WALLTIME_KEY))
+    persist_read_string(WALLTIME_KEY, stop_time, PERSIST_STRING_MAX_LENGTH);
+
+  /*load old time into vars*/
+  string_to_time(stop_time);
+  /*save the vars*/
+  int oldSecs = seconds;
+  int oldMins = minutes;
+  int oldHours = hours;
+
+  /*subtract and do math*/
+  oldSecs = current_time->tm_sec - oldSecs;
+  oldMins = current_time->tm_min - oldMins;
+  oldHours = current_time->tm_hour - oldHours;
+
+  /*great, now add on the saved time*/
+  string_to_time(ltime);
+  seconds+=oldSecs;
+  minutes+=oldMins;
+  hours+=oldHours;
+
+  /*now we need to make sure they are accurate*/
+  while (seconds < 0)
+  {
+    seconds+=60;
+    minutes--;
+  }
+  while (minutes < 0)
+  {
+    minutes+=60;
+    hours--;
+  }
+  while (hours < 0)
+    hours = (hours + 24);
+
+  /*now see if they're too big*/
+  while (seconds > 60)
+  {
+    seconds-=60;
+    minutes++;
+  }
+  while (minutes > 60)
+  {
+    minutes-=60;
+    hours++;
+  }
+ 
 
   /*synchronize data*/
   paused = lpaused;
-  string_to_time(time);
+
 
   /*appear usual*/
   switch_resume_icon();
+
+  /* force watch refresh */
+  vtom();
+  text_layer_set_text(text_layer, time_text);
 }
 
 /*Function:   init(void)
