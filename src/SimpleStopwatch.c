@@ -17,6 +17,8 @@
 #define PAUSED_KEY 0
 #define TIME_KEY 1
 #define WALLTIME_KEY 2
+#define LAP_COUNT_KEY 3
+#define LAP_DATA_KEY 4
 
 /* variable declarations */
 static Window *window;
@@ -487,6 +489,10 @@ static void save_data(void)
   persist_write_string(TIME_KEY, time_text);
   persist_write_bool(PAUSED_KEY, paused);
   persist_write_string(WALLTIME_KEY, current_time_string);
+  persist_write_data(LAP_DATA_KEY, &lapTimes, 
+                     sizeof(char)*12*currentLapIndex);
+  persist_write_int(LAP_COUNT_KEY, currentLapIndex);
+
 }
 
 /*Function:   load_data(void)
@@ -501,6 +507,7 @@ static void load_data(void)
   char ltime[] = "00h:00m:00s";
   char stop_time[] = "00h:00m:00s";
   bool lpaused = true;
+  int lapCount = 0;
 
   /*get the current time*/
   struct tm *current_time;
@@ -516,9 +523,14 @@ static void load_data(void)
     lpaused = persist_read_bool(PAUSED_KEY);
   if (persist_exists(WALLTIME_KEY))
     persist_read_string(WALLTIME_KEY, stop_time, PERSIST_STRING_MAX_LENGTH);
+  if (persist_exists(LAP_COUNT_KEY))
+    lapCount = persist_read_int(LAP_COUNT_KEY);
+  if (persist_exists(LAP_DATA_KEY))
+    persist_read_data(LAP_DATA_KEY, &lapTimes, sizeof(char)*12*lapCount);
 
   /*synchronize data*/
   paused = lpaused;
+  currentLapIndex = lapCount;
 
   /*if we are paused, we can skip everything, no recording in the background*/
   if (paused)
