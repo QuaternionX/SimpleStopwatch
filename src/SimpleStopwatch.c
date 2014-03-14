@@ -138,6 +138,12 @@ void vtom()
   }
 }
 
+static void lap_select_callback(int index, void *ctx)
+{
+  string_to_time(lapTimes[index]);
+  vtom();
+}
+
 /*Function:   vitom(char*,int)
 * Purpose:    To convert the parameter array into an applicable time
 *             String by altering its individual elements (just as vtom
@@ -271,6 +277,8 @@ void reset_laps()
     lapTimes[i][10] = 's';
     lapTimes[i][11] = '\0';
   }
+
+  currentLapIndex = 0;
 }
     
 
@@ -375,6 +383,7 @@ void lap_menu_handle(ClickRecognizerRef recognizer, void *context)
     {
       menu_items[i] = (SimpleMenuItem){
         .title = &lapTimes[i][0], /*objects have time as title*/
+        .callback = lap_select_callback,
       };
     }
 
@@ -507,7 +516,6 @@ static void load_data(void)
   char ltime[] = "00h:00m:00s";
   char stop_time[] = "00h:00m:00s";
   bool lpaused = true;
-  int lapCount = 0;
 
   /*get the current time*/
   struct tm *current_time;
@@ -524,13 +532,13 @@ static void load_data(void)
   if (persist_exists(WALLTIME_KEY))
     persist_read_string(WALLTIME_KEY, stop_time, PERSIST_STRING_MAX_LENGTH);
   if (persist_exists(LAP_COUNT_KEY))
-    lapCount = persist_read_int(LAP_COUNT_KEY);
+    currentLapIndex = persist_read_int(LAP_COUNT_KEY);
   if (persist_exists(LAP_DATA_KEY))
-    persist_read_data(LAP_DATA_KEY, &lapTimes, sizeof(char)*12*lapCount);
+    persist_read_data(LAP_DATA_KEY, &lapTimes, 
+                      sizeof(char)*12*currentLapIndex);
 
   /*synchronize data*/
   paused = lpaused;
-  currentLapIndex = lapCount;
 
   /*if we are paused, we can skip everything, no recording in the background*/
   if (paused)
