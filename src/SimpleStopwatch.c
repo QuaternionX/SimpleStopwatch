@@ -26,6 +26,7 @@ static GBitmap *my_icon_pause, *my_icon_reset, *my_icon_lap, *my_icon_start;
 static int seconds = 0;
 static int minutes = 0;
 static int hours = 0;
+static char time_text[] = "00h\n00m\n00s";
 /*lap variables*/
 static int currentLapIndex = 0;
 static bool paused = true;
@@ -34,7 +35,7 @@ static SimpleMenuSection menu_sections[1];
 static SimpleMenuItem menu_items[100];
 
 /*Function declarations!*/
-static char * vtom(int sec, int min, int hour);
+void vtom();
 
 
 /*Function:   string_to_time(char*)
@@ -66,7 +67,8 @@ static void string_to_time(char* timeString)
   }
 
   /* force watch refresh */
-  text_layer_set_text(text_layer, vtom(seconds,minutes,hours));
+  vtom();
+  text_layer_set_text(text_layer, time_text);
 }
 /*Function:   vtom(int,int,int)
 * Purpose:    To convert individual hours, minutes, and seconds values 
@@ -78,16 +80,19 @@ static void string_to_time(char* timeString)
 *             hour - the hours to put into string
 * Return:     The String containing the readable time.
 */
-static char * vtom(int sec, int min, int hour)
+
+void vtom()
 {
   /* create appended time number and empty String template */
-  int time = (hour * 10000) + (min * 100) + sec;
-  static char arr[] = "00h\n00m\n00s";
+  int time = (hours * 10000) + (minutes * 100) + seconds;
   int i = 9; /* used to scroll through time template */
 
-  while (time > 0)
+  while (i >= 0)
   {
-    arr[i] = (time % 10) + '0'; /* add time digits (conv to char) */
+    if (time == 0)
+      time_text[i] = '0';
+
+    time_text[i] = (time % 10) + '0'; /* add time digits (conv to char) */
     time /= 10; /* remove inserted digit from number */
 
     /*logic to skip a spot (if it is \n or letter spot)*/
@@ -96,10 +101,7 @@ static char * vtom(int sec, int min, int hour)
     else if (i % 4 == 0)
       i-=3;
   }
-  /* return the formatted string */
-  return arr;
 }
-
 
 /*Function:   vitom(char*,int)
 * Purpose:    To convert the parameter array into an applicable time
@@ -170,7 +172,8 @@ static void handle_second_tick(struct tm* tick_time, TimeUnits units_changed)
   }
 
   /* update text layer */
-  text_layer_set_text(text_layer, vtom(seconds,minutes,hours));
+  vtom();
+  text_layer_set_text(text_layer, time_text);
 }
 
 /*Function:   lap_handle(ClickRecognizerRef, void*)
@@ -266,12 +269,18 @@ void reset_handle(ClickRecognizerRef recognizer, void *context)
 
   reset_laps(); /*reset laps */
 
+
+  seconds = 0;
+  minutes = 0;
+  hours = 0;
+
+  /*update text*/
+  vtom();
+  text_layer_set_text(text_layer, time_text);
+
   /*pause the stopwatch*/
   paused = true;
   switch_resume_icon(); /* switch resume icon */
-
-  /*update text*/
-  text_layer_set_text(text_layer, "00h\n00m\n00s");
 }
 
 /*Function:   lap_window_load(Window*)
@@ -431,7 +440,7 @@ static void window_unload(Window *window)
 */
 static void save_data(void)
 {
-  persist_write_string(TIME_KEY, vtom(seconds,minutes,hours));
+  persist_write_string(TIME_KEY, time_text);
   persist_write_bool(PAUSED_KEY, paused);
 }
 
