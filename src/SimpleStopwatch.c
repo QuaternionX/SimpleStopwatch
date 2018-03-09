@@ -7,7 +7,7 @@
 * The Stopwatch allows the user to keep track of time (up to seconds) by using
 * the provided large and user-friendly interface. This app also provides 
 * an actionbar so the user can pause, reset, and lap the stopwatch. The lap
-* button can alternatively be held to view all saved laps.
+* button can aslternatively be held to view all saved laps.
 *
 * Enjoy!
 *******************************************************************************/
