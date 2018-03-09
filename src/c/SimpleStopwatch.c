@@ -7,7 +7,7 @@
 * The Stopwatch allows the user to keep track of time (up to seconds) by using
 * the provided large and user-friendly interface. This app also provides 
 * an actionbar so the user can pause, reset, and lap the stopwatch. The lap
-* button can aslternatively be held to view all saved laps.
+* button can alternatively be held to view all saved laps.
 *
 * Enjoy!
 *******************************************************************************/
@@ -326,6 +326,25 @@ void reset_handle(ClickRecognizerRef recognizer, void *context)
   switch_resume_icon(); /* switch resume icon */
 }
 
+static void accel_tap_handler(AccelAxisType axis, int32_t direction)
+{
+  /* reset time */
+  seconds = 0;
+  minutes = 0;
+  hours = 0;
+
+  reset_laps(); /*reset laps */
+
+
+  seconds = 0;
+  minutes = 0;
+  hours = 0;
+
+  /*update text*/
+  vtom();
+  text_layer_set_text(text_layer, time_text);
+}
+
 /*Function:   lap_window_load(Window*)
 * Purpose:    To load the lap window when the lap button is held 
 *             pressed by creating the menu, adding it, and displaying
@@ -615,6 +634,8 @@ static void load_data(void)
 * Return:     None.
 */
 static void init(void) {
+	// Subscribe to tap events
+	accel_tap_service_subscribe(accel_tap_handler);
   /*create the window */
   window = window_create();
 
@@ -647,6 +668,9 @@ static void deinit(void) {
   gbitmap_destroy(my_icon_reset);
   gbitmap_destroy(my_icon_lap);
   gbitmap_destroy(my_icon_pause);
+	
+	// Unsubscribe from tap events
+	accel_tap_service_unsubscribe();
 
   /*deinitialize the main window*/
   window_destroy(window);

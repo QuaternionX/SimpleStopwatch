@@ -1,0 +1,49 @@
+{
+    "author": "adalit@gmail.com",
+    "dependencies": {},
+    "keywords": [],
+    "name": "simplestopwatch",
+    "pebble": {
+        "displayName": "SimpleStopwatch",
+        "enableMultiJS": false,
+        "messageKeys": [],
+        "projectType": "native",
+        "resources": {
+            "media": [
+                {
+                    "file": "images/resume.png",
+                    "name": "IMAGE_RESUME",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/pause.png",
+                    "name": "IMAGE_PAUSE",
+                    "targetPlatforms": null,
+                    "type": "png"
+                },
+                {
+                    "file": "images/lap.png",
+                    "name": "IMAGE_LAP",
+                    "targetPlatforms": null,
+                    "type": "png"
+                },
+                {
+                    "file": "images/reset.png",
+                    "name": "IMAGE_RESET",
+                    "targetPlatforms": null,
+                    "type": "png"
+                }
+            ]
+        },
+        "sdkVersion": "3",
+        "targetPlatforms": [
+            "diorite"
+        ],
+        "uuid": "486d8cbf-14c0-4c36-8350-48706efcb6ed",
+        "watchapp": {
+            "watchface": false
+        }
+    },
+    "version": "1.0.0"
+}
